@@ -1,0 +1,11 @@
+import datetime as dt #importar funciones - modulo fecha
+import random as rd #importar funciones - modulo aleatorio
+nombre= "luis" #constantes
+fecha= dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S") #variable
+#definir valores aleatorios
+v=rd.randint(1, 1023) #entero entre 1 y 100
+print("hola " + nombre)
+print( fecha)
+print("voltaje medio: " + str(v)) #salida variable
+#str cambia numeros a texto
+
