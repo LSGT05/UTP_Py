@@ -7,4 +7,4 @@ v=rd.randint(1, 1023) #entero entre 1 y 100
 print("hola " + nombre)
 print( fecha)
 print("voltaje medio: " + str(v)) #salida variable
-#str cambia numeros a texto dfhdfhdhd
+#str cambia numeros a texto 
