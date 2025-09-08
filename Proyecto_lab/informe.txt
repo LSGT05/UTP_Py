@@ -1,4 +1,4 @@
-📊 KPIs DEL PROCESO
+KPIs DEL PROCESO
 Filas_totales: 250
 Filas_validas: 0
 Descartes_Timestamp: 250
