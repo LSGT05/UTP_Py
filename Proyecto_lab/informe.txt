@@ -1,0 +1,10 @@
+📊 KPIs DEL PROCESO
+Filas_totales: 250
+Filas_validas: 0
+Descartes_Timestamp: 250
+Descartes_Valor: 0
+n: 0
+temp_min: None
+temp_max: None
+temp_prom: None
+Alertas: 0

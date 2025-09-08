@@ -74,7 +74,7 @@ def main():
         temp_min = temp_max = temp_prom = None
 
     with open(REPORT_FILE, "w", encoding="utf-8") as rep:
-        rep.write("KPIs DEL PROCESO\n")
+        rep.write("📊 KPIs DEL PROCESO\n")
         rep.write(f"Filas_totales: {filas_totales}\n")
         rep.write(f"Filas_validas: {filas_validas}\n")
         rep.write(f"Descartes_Timestamp: {descartes_timestamp}\n")
