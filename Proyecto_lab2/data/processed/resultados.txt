@@ -1,0 +1,7 @@
+===== RESULTADOS DEL PROCESAMIENTO =====
+Filas_totales: 250
+Filas_validas: 0
+Descartes_Timestamp: 250
+Descartes_valor: 0
+n: 0
+Alertas (>40°C): 0
