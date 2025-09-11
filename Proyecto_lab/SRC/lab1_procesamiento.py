@@ -1,6 +1,6 @@
 import csv
 import os
-base_path = os.path.dirname(os.path.abspath(__file__))  # carpeta SRC
+base_path = os.path.dirname(os.path.abspath(__file__))  
 input_file = os.path.join(base_path, "../DATA/RAW/datos_sucios_250_v2.csv")
 output_file = os.path.join(base_path, "../DATA/PROCESSED/Temperaturas_Procesado.csv")
 kpi_file = os.path.join(base_path, "../DATA/PROCESSED/KPIs.txt")
