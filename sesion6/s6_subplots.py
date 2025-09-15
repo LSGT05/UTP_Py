@@ -1,28 +1,52 @@
-import matplotlib.pyplot  as plt
+import matplotlib.pyplot as plt
 import numpy as np
 
-def aleatorio(n=20):
-        #Docstring
-    """permite generar numeros aleatorios de valor entero entre 1 y 30 y da de salida una lista de valores
+# Generar datos para la función seno
+x = np.linspace(0, 4*np.pi, 1000)  # Valores de x de 0 a 4π
+y_seno = np.sin(x)                  # Función seno
+y_seno_inversa = -np.sin(x)         # Función seno inversa
 
-    Args:
-        n (int, optional): numero el datos ingresados. Defecto 20.
-    """
-    import random as rd
-    Value=[] #lista vacia
-    for i in range (n): #incio de un bucle es con el : el identado es importante
-        Value.append(rd.randint(1,30)) #append añade a la lista\
-    return(Value) #lo que devuelve la funcion
+# Crear la gráfica
+plt.figure(figsize=(10, 6))  # Tamaño de la figura
 
-ejex=[i for i in range(30)] #crear numeros del 0 al 29
-ejey=aleatorio(30)
-ejey2=aleatorio(30)
+# Graficar ambas funciones
+plt.plot(x, y_seno, 'b-', linewidth=2, label='Sen(x)')
+plt.plot(x, y_seno_inversa, 'r--', linewidth=2, label='-Sen(x)')
 
-fig,axs = plt.subplots(1,2)
-fig.suptitle("datos por separado")
-axs[0].plot(ejex,ejey,'go',label="datos de tiempo de sueño")
-axs[0].set_title("datos de tiempo de sueño")
-axs[0].set_xlabel("tiempo")
-axs[1].plot(ejex,ejey2,'rx',label="datos de tiempo de juego")
-axs[1].set_title("datos de tiempo de juego")
+# Configurar título y etiquetas
+plt.title("Funciones Seno y su Inversa", fontsize=14, fontweight='bold')
+plt.xlabel("Ángulo (radianes)", fontsize=12)
+plt.ylabel("Valor de la función", fontsize=12)
+
+# Agregar leyenda
+plt.legend(loc='upper right')
+
+# Agregar grid para mejor lectura
+plt.grid(True, alpha=0.3)
+
+# Configurar límites de los ejes
+plt.xlim(0, 4*np.pi)
+plt.ylim(-1.5, 1.5)
+
+# Agregar líneas de referencia
+plt.axhline(y=0, color='k', linestyle='-', alpha=0.3)
+plt.axvline(x=0, color='k', linestyle='-', alpha=0.3)
+
+# Mejorar el aspecto general
+plt.tight_layout()
+
+# Guardar la gráfica en un archivo
+plt.savefig('funciones_seno.png', dpi=300, bbox_inches='tight')
+
+# Mostrar la gráfica
 plt.show()
+
+# También podemos guardar los datos en un archivo de texto
+datos = np.column_stack((x, y_seno, y_seno_inversa))
+np.savetxt('datos_seno.txt', datos, 
+           header='x\tSen(x)\t-Sen(x)', 
+           delimiter='\t', 
+           fmt='%.4f')
+
+print("Gráfica guardada como 'funciones_seno.png'")
+print("Datos guardados como 'datos_seno.txt'")
