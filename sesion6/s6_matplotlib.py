@@ -16,8 +16,3 @@ ejey=aleatorio(30)
 fig, ax = plt.subplots()   #crear una figura con ejes simples
 ax.plot(ejex, ejey)        #datos de ploteo (X, Y)
 plt.show()                 #grafica la imagen
-
-
-
-
-
