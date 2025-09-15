@@ -17,10 +17,12 @@ def aleatorio(n=20):
 ejex=[i for i in range(30)] #crear numeros del 0 al 29
 ejey=aleatorio(30)
 ejey2=aleatorio(30)
-plt.title("Estudio de tiempo de sueño de adultos")                          #TITULOS
-plt.xlabel("dias de la semana")                                             #TITULO DE EJE X
-plt.ylabel("horas al dia")                                                  #TITULO DE EJE Y
-plt.plot(ejex,ejey,'r-+',label="datos de tiempo de sueño de adultos")       # datos de ploteo (X,Y,formato y label)
-plt.plot(ejex,ejey2,'bo',label="datos de tiempo de juego de adultos")      
-plt.legend()                                                                #"leyenda"
-plt.show()   
+
+fig,axs = plt.subplots(1,2)
+fig.suptitle("datos por separado")
+axs[0].plot(ejex,ejey,'go',label="datos de tiempo de sueño")
+axs[0].set_title("datos de tiempo de sueño")
+axs[0].set_xlabel("tiempo")
+axs[1].plot(ejex,ejey2,'rx',label="datos de tiempo de juego")
+axs[1].set_title("datos de tiempo de juego")
+plt.show()
