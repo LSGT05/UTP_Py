@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 # === ENRUTAMIENTO ===
-ROOT = Path(__file__).resolve().parents[1]  # Carpeta padre antes de la actual
+ROOT = Path(__file__).resolve().parents[1]  # Carpeta principal
 DATA_DIR = ROOT / "Proyecto_lab" / "DATA" / "PROCESSED"
 FILENAME = "Temperaturas_Procesado.csv"
 CSV_PATH = DATA_DIR / FILENAME
@@ -14,8 +14,8 @@ print(f"Archivo de entrada: {CSV_PATH}")
 if not CSV_PATH.exists():
     raise FileNotFoundError(f"No existe el archivo: {CSV_PATH}")
 
-# Carpeta de salida para gráficos
-PLOTS_DIR = ROOT / "Sesion 7 - Sesion 8" / "plots"
+# Carpeta de salida: sesion8/plots
+PLOTS_DIR = ROOT/"sesion8"/"plots"
 PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # === CONFIGURACIONES ===
@@ -94,8 +94,12 @@ plt.show()
 print("Guardado:", out1)
 
 # === GRAFICO 2: VOLTAJE VS TEMPERATURA ===
+alerta_v = [v for v, a in zip(Voltaje, Alertas) if a == "ALERTA"]
+alerta_T2 = [T for T, a in zip(Temp_C, Alertas) if a == "ALERTA"]
+
 plt.figure(figsize=(7, 4))
-plt.scatter(Temp_C, Voltaje, color="#2ca02c", alpha=0.7, label="Datos medidos")
+plt.scatter(Temp_C, Voltaje, color="#2ca02c", alpha=0.7, label="Datos normales")
+plt.scatter(alerta_T2, alerta_v, color="#ff3b3b", label="ALERTAS")
 plt.title(f"VOLTAJE vs TEMPERATURA — {CSV_PATH.stem}".upper(), fontweight='bold')
 plt.xlabel("Temperatura (°C)")
 plt.ylabel("Voltaje (V)")
