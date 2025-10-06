@@ -98,8 +98,8 @@ alerta_v = [v for v, a in zip(Voltaje, Alertas) if a == "ALERTA"]
 alerta_T2 = [T for T, a in zip(Temp_C, Alertas) if a == "ALERTA"]
 
 plt.figure(figsize=(7, 4))
-plt.scatter(Temp_C, Voltaje, color="#2ca02c", alpha=0.7, label="Datos normales")
-plt.scatter(alerta_T2, alerta_v, color="#ff3b3b", label="ALERTAS")
+plt.scatter(Temp_C, Voltaje, color="#4400ff", alpha=0.7, label="Datos normales")
+plt.scatter(alerta_T2, alerta_v, color="#ff0000", label="ALERTAS")
 plt.title(f"VOLTAJE vs TEMPERATURA — {CSV_PATH.stem}".upper(), fontweight='bold')
 plt.xlabel("Temperatura (°C)")
 plt.ylabel("Voltaje (V)")
