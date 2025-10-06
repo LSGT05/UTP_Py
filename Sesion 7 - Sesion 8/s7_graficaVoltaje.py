@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 #Enrutamiento de entrada
 ROOT=Path(__file__).resolve().parents[1] #antes de la carpeta Sesion 7
-DATA_DIR= ROOT/"Sesion 4"/"datos"/"proccesing"
+DATA_DIR= ROOT/"sesion4"/"datos"/"proccesing"
 FILENAME= "voltajes_250_sucio_limpio.csv"
 CSV_PATH = DATA_DIR / FILENAME
 print(CSV_PATH)
