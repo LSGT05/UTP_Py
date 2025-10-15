@@ -1,7 +1,7 @@
 from pathlib import Path
 #enrutamiento de entrada
 ROOT=Path(__file__).resolve().parents[1] #estandar en TODOS LOS LUGARES
-DATA_DIR=ROOT/"Sesion 4"/"datos"/"proccesing"
+DATA_DIR=ROOT/"Sesion4"/"datos"/"proccesing"
 Filename="voltajes_250_sucio_limpio.csv"
 CSV_PATH=DATA_DIR/Filename
 if not CSV_PATH.exists():
