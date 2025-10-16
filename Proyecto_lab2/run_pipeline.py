@@ -1,4 +1,4 @@
-from src import (
+from src.pipeline import (
     Root, ensure_dirs, list_raw_csvs, make_clean_name, safe_stem,
     clean_file, kpis_volt,
     plot_voltage_line, plot_voltage_hist, plot_boxplot_by_sensor
@@ -13,10 +13,9 @@ DATA_CLEAN = ROOT / "data" / "clean"
 PLOTS = ROOT / "plots"
 REPORTS = ROOT / "reports"
 
-# Crear carpetas necesarias
 ensure_dirs(DATA_CLEAN, PLOTS, REPORTS)
 
-UMBRAL_T = 353.15  # equivalente a 80°C en Kelvin
+UMBRAL_T = 353.15  # 80°C en Kelvin
 
 # === 1. PROCESAR ARCHIVOS CRUDOS ===
 raw_files = list_raw_csvs(DATA_RAW)
@@ -32,35 +31,29 @@ for raw_path in raw_files:
     clean_path = DATA_CLEAN / clean_name
     print(f"\nProcesando: {raw_path.name} → {clean_name}")
 
-    # Limpieza y transformación voltaje → temperatura (K)
     ts_list, volts_list, temps_list, stats = clean_file(raw_path, clean_path)
-
-    # === 2. CALCULAR KPIs ===
     kpi = kpis_volt(temps_list, umbral=UMBRAL_T)
     kpi.update(stats)
     kpi["archivo"] = raw_path.name
     all_kpis.append(kpi)
-
-    # Guardar datos para boxplot
     sensor_data[safe_stem(raw_path)] = temps_list
 
-    # === 3. GRAFICAR ===
     plot_voltage_line(
         ts_list, temps_list, umbral_v=UMBRAL_T,
-        title=f"Temperatura vs Tiempo - {raw_path.stem}",
+        title=f"Temperatura (K) vs Tiempo - {raw_path.stem}",
         out_path=PLOTS / f"{safe_stem(raw_path)}_linea.png"
     )
 
     plot_voltage_hist(
         temps_list,
-        title=f"Histograma Temperatura - {raw_path.stem}",
+        title=f"Histograma Temperatura (K) - {raw_path.stem}",
         out_path=PLOTS / f"{safe_stem(raw_path)}_hist.png"
     )
 
-# === 4. BOX PLOT COMPARATIVO ===
+# === BOX PLOT GLOBAL ===
 plot_boxplot_by_sensor(sensor_data, PLOTS / "boxplot_global.png")
 
-# === 5. REPORTE DE KPIs ===
+# === REPORTE ===
 report_path = REPORTS / "kpis_por_archivo.csv"
 with report_path.open("w", encoding="utf-8", newline="") as f:
     fieldnames = list(all_kpis[0].keys())
