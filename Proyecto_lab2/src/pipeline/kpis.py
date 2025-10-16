@@ -1,17 +1,9 @@
 from statistics import mean
 
-def kpis_temp(temps, umbral=310.0):
-    """
-    Calcula los KPIs de temperatura (en Kelvin):
-      - n: cantidad de datos válidos
-      - min: temperatura mínima
-      - max: temperatura máxima
-      - prom: promedio
-      - alerts: cantidad de lecturas sobre el umbral
-      - alerts_pct: porcentaje de alertas
-    """
-    temps = [float(v) for v in temps if v is not None]
-    n = len(temps)
+def kpis_volt(hum, umbral=90.0):
+    """KPIs de voltaje: n, min, max, prom, alertas y %."""
+    hum = [float(v) for v in hum if v is not None]
+    n = len(hum)
     if n == 0:
         return {
             "n": 0,
@@ -21,13 +13,12 @@ def kpis_temp(temps, umbral=310.0):
             "alerts": 0,
             "alerts_pct": 0.0
         }
-
-    alerts = sum(v > umbral for v in temps)
+    alerts = sum(v > umbral for v in hum)
     return {
         "n": n,
-        "min": min(temps),
-        "max": max(temps),
-        "prom": mean(temps),
+        "min": min(hum),
+        "max": max(hum),
+        "prom": mean(hum),
         "alerts": alerts,
-        "alerts_pct": round(100.0 * alerts / n, 2)
+        "alerts_pct": 100.0 * alerts / n
     }

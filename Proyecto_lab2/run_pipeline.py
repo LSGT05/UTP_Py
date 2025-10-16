@@ -1,113 +1,74 @@
-import csv
+from src import (
+    Root, ensure_dirs, list_raw_csvs, make_clean_name, safe_stem,
+    clean_file, kpis_volt,
+    plot_voltage_line, plot_voltage_hist, plot_boxplot_by_sensor
+)
 from pathlib import Path
-from src.pipeline.cleaning import clean_file
-from Proyecto_lab2.src.pipeline.kpis import kpis_volt
-from src.pipeline.plotting import (
-    plot_voltage_line,
-    plot_voltage_hist,
-    plot_boxplot_by_sensor
-)
-from src.pipeline.IO_Utils import (
-    ensure_dirs,
-    list_raw_csvs,
-    make_clean_name,
-    safe_stem
-)
+import csv
 
-# ==============================
-# CONFIGURACIÓN DE RUTAS
-# ==============================
-ROOT = Path(__file__).resolve().parent
-RAW_DIR = ROOT / "data" / "raw"
-CLEAN_DIR = ROOT / "data" / "clean"
-PLOTS_DIR = ROOT / "plots"
-REPORTS_DIR = ROOT / "reports"
+# === CONFIGURACIÓN GENERAL ===
+ROOT = Root(__file__)
+DATA_RAW = ROOT / "data" / "raw"
+DATA_CLEAN = ROOT / "data" / "clean"
+PLOTS = ROOT / "plots"
+REPORTS = ROOT / "reports"
 
-ensure_dirs(CLEAN_DIR, PLOTS_DIR, REPORTS_DIR)
+# Crear carpetas necesarias
+ensure_dirs(DATA_CLEAN, PLOTS, REPORTS)
 
-# ==============================
-# PARÁMETROS DE CALIBRACIÓN
-# ==============================
-CAL_V1, CAL_T1 = 0.4, -30 + 273.15   # (0.4V → 243.15K)
-CAL_V2, CAL_T2 = 5.6, 120 + 273.15   # (5.6V → 393.15K)
-UMBRAL_TEMP_K = 353.15               # 80°C en Kelvin
+UMBRAL_T = 353.15  # equivalente a 80°C en Kelvin
 
-def voltaje_a_tempK(v: float) -> float:
-    """Transforma voltaje (V) a temperatura (K) usando interpolación lineal."""
-    return CAL_T1 + (CAL_T2 - CAL_T1) * (v - CAL_V1) / (CAL_V2 - CAL_V1)
-
-# ==============================
-# PROCESAMIENTO DE ARCHIVOS
-# ==============================
-raw_files = list_raw_csvs(RAW_DIR)
+# === 1. PROCESAR ARCHIVOS CRUDOS ===
+raw_files = list_raw_csvs(DATA_RAW)
 if not raw_files:
-    print(" No se encontraron archivos en data/raw/")
+    print("No se encontraron archivos CSV en data/raw.")
     exit()
 
 all_kpis = []
-sensor_to_temp = {}
+sensor_data = {}
 
 for raw_path in raw_files:
-    print(f"\n Procesando: {raw_path.name}")
-    clean_path = CLEAN_DIR / make_clean_name(raw_path)
+    clean_name = make_clean_name(raw_path)
+    clean_path = DATA_CLEAN / clean_name
+    print(f"\nProcesando: {raw_path.name} → {clean_name}")
 
-    # Limpieza
-    ts_list, volts_list, _, stats = clean_file(
-        in_path=raw_path,
-        out_path=clean_path,
-        ts_col="timestamp",
-        v_col_candidates=("value", "voltaje", "voltage_V")
+    # Limpieza y transformación voltaje → temperatura (K)
+    ts_list, volts_list, temps_list, stats = clean_file(raw_path, clean_path)
+
+    # === 2. CALCULAR KPIs ===
+    kpi = kpis_volt(temps_list, umbral=UMBRAL_T)
+    kpi.update(stats)
+    kpi["archivo"] = raw_path.name
+    all_kpis.append(kpi)
+
+    # Guardar datos para boxplot
+    sensor_data[safe_stem(raw_path)] = temps_list
+
+    # === 3. GRAFICAR ===
+    plot_voltage_line(
+        ts_list, temps_list, umbral_v=UMBRAL_T,
+        title=f"Temperatura vs Tiempo - {raw_path.stem}",
+        out_path=PLOTS / f"{safe_stem(raw_path)}_linea.png"
     )
 
-    if not volts_list:
-        print(f" {raw_path.name}: sin datos válidos, omitido.")
-        continue
+    plot_voltage_hist(
+        temps_list,
+        title=f"Histograma Temperatura - {raw_path.stem}",
+        out_path=PLOTS / f"{safe_stem(raw_path)}_hist.png"
+    )
 
-    # Conversión voltaje → temperatura (K)
-    temps_K = [voltaje_a_tempK(v) for v in volts_list]
+# === 4. BOX PLOT COMPARATIVO ===
+plot_boxplot_by_sensor(sensor_data, PLOTS / "boxplot_global.png")
 
-    # Guardar archivo limpio (temperatura en Kelvin)
-    with clean_path.open("w", encoding="utf-8", newline="") as fout:
-        writer = csv.writer(fout)
-        writer.writerow(["timestamp", "voltage_V", "temperature_K"])
-        for t, v, tk in zip(ts_list, volts_list, temps_K):
-            writer.writerow([t.strftime("%Y-%m-%dT%H:%M:%S"), f"{v:.3f}", f"{tk:.3f}"])
+# === 5. REPORTE DE KPIs ===
+report_path = REPORTS / "kpis_por_archivo.csv"
+with report_path.open("w", encoding="utf-8", newline="") as f:
+    fieldnames = list(all_kpis[0].keys())
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(all_kpis)
 
-    # KPIs
-    kpis = kpis_volt(temps_K, umbral=UMBRAL_TEMP_K)
-    kpis.update(stats)
-    kpis["archivo"] = raw_path.name
-    all_kpis.append(kpis)
-
-    # Gráficos individuales
-    sensor_name = safe_stem(raw_path)
-    plot_voltage_line(ts_list, temps_K, UMBRAL_TEMP_K,
-                      f"Temperatura (K) - {sensor_name}",
-                      PLOTS_DIR / f"{sensor_name}_line.png")
-    plot_voltage_hist(temps_K, f"Histograma Temperatura (K) - {sensor_name}",
-                      PLOTS_DIR / f"{sensor_name}_hist.png")
-
-    # Datos para boxplot global
-    sensor_to_temp[sensor_name] = temps_K
-
-# ==============================
-# BOX PLOT GLOBAL
-# ==============================
-if sensor_to_temp:
-    plot_boxplot_by_sensor(sensor_to_temp, PLOTS_DIR / "boxplot_temperaturas.png")
-
-# ==============================
-# REPORTE DE KPIs
-# ==============================
-if all_kpis:
-    report_path = REPORTS_DIR / "kpis_por_archivo.csv"
-    with report_path.open("w", encoding="utf-8", newline="") as fout:
-        fieldnames = list(all_kpis[0].keys())
-        writer = csv.DictWriter(fout, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(all_kpis)
-
-    print("\n Pipeline completado correctamente.")
-    print(f" Reporte KPIs: {report_path}")
-else:
-    print("\n No se generaron KPIs (posibles datos inválidos).")
+print(f"\n✅ Pipeline completado con éxito.")
+print(f"→ Archivos limpios en: {DATA_CLEAN}")
+print(f"→ Gráficos en: {PLOTS}")
+print(f"→ Reporte KPI en: {report_path}")
