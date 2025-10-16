@@ -61,7 +61,7 @@ with report_path.open("w", encoding="utf-8", newline="") as f:
     writer.writeheader()
     writer.writerows(all_kpis)
 
-print(f"\n✅ Pipeline completado con éxito.")
+print(f"\n Pipeline completado con éxito.")
 print(f"→ Archivos limpios en: {DATA_CLEAN}")
 print(f"→ Gráficos en: {PLOTS}")
 print(f"→ Reporte KPI en: {report_path}")
