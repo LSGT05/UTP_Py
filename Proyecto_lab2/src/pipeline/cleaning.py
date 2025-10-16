@@ -80,4 +80,4 @@ def clean_file(in_path: Path, out_path: Path, ts_col="timestamp", v_col_candidat
         "%descartadas": round(((bad_ts + bad_val) / total * 100.0) if total else 0.0, 2),
     }
 
-    return ts_list, volts_list,Humedad,stats
+    return ts_list, volts_list,Humedad,stats 

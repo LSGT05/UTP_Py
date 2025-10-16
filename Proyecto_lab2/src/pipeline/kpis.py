@@ -1,6 +1,6 @@
 from statistics import mean
 
-def kpis_volt(hum, umbral=90.0):
+def kpis_volt(hum, umbral>80.0):
     """KPIs de voltaje: n, min, max, prom, alertas y %."""
     hum = [float(v) for v in hum if v is not None]
     n = len(hum)
