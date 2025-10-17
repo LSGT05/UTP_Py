@@ -9,7 +9,7 @@ import csv
 # === CONFIGURACIÓN GENERAL ===
 ROOT = Root(__file__)
 DATA_RAW = ROOT / "data" / "raw"
-DATA_CLEAN = ROOT / "data" / "clean"
+DATA_CLEAN = ROOT / "data" / "processed"
 PLOTS = ROOT / "plots"
 REPORTS = ROOT / "reports"
 
