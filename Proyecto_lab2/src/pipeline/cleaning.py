@@ -6,7 +6,7 @@ from .IO_Utils import detectar_delimitador
 # Tokens que representan datos no válidos
 NA_TOKENS = {"", "na", "n/a", "nan", "null", "none", "error"}
 
-# --- Calibración lineal Voltaje→Temperatura (°C)
+# Calibración lineal Voltaje→Temperatura (°C)
 # Datos de calibración:
 V1, T1 = 0.4, -30.0   # Punto 1: (V1, T1)
 V2, T2 = 5.6, 120.0   # Punto 2: (V2, T2)
@@ -69,14 +69,14 @@ def clean_file(in_path: Path, out_path: Path,
         for row in reader:
             total += 1
 
-            # --- Timestamp ---
+            #Timestamp
             ts_raw = (row.get(ts_col) or "").strip()
             t = parse_ts(ts_raw)
             if t is None:
                 bad_ts += 1
                 continue
 
-            # --- Voltaje ---
+            #Voltaje
             v_raw = None
             for cand in v_col_candidates:
                 if row.get(cand) is not None:
@@ -87,7 +87,7 @@ def clean_file(in_path: Path, out_path: Path,
                 bad_val += 1
                 continue
 
-            # --- Calibración Voltaje→Temperatura (K) ---
+            #Calibración Voltaje→Temperatura (K)
             temp_k = voltaje_a_kelvin(v)
 
             writer.writerow({

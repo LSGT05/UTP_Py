@@ -6,7 +6,7 @@ from src.pipeline import (
 from pathlib import Path
 import csv
 
-# === CONFIGURACIÓN GENERAL ===
+#CONFIGURACIÓN GENERAL
 ROOT = Root(__file__)
 DATA_RAW = ROOT / "data" / "raw"
 DATA_CLEAN = ROOT / "data" / "processed"
@@ -17,7 +17,7 @@ ensure_dirs(DATA_CLEAN, PLOTS, REPORTS)
 
 UMBRAL_T = 353.15  # 80°C en Kelvin
 
-# === 1. PROCESAR ARCHIVOS CRUDOS ===
+#PROCESAR ARCHIVOS CRUDOS
 raw_files = list_raw_csvs(DATA_RAW)
 if not raw_files:
     print("No se encontraron archivos CSV en data/raw.")
@@ -50,10 +50,10 @@ for raw_path in raw_files:
         out_path=PLOTS / f"{safe_stem(raw_path)}_hist.png"
     )
 
-# === BOX PLOT GLOBAL ===
+#BOXPLOT GLOBAL
 plot_boxplot_by_sensor(sensor_data, PLOTS / "boxplot_global.png")
 
-# === REPORTE ===
+#REPORTE
 report_path = REPORTS / "kpis_por_archivo.csv"
 with report_path.open("w", encoding="utf-8", newline="") as f:
     fieldnames = list(all_kpis[0].keys())
