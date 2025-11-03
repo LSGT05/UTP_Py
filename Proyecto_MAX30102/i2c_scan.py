@@ -10,9 +10,9 @@ time.sleep(1)
 devices = i2c.scan()
 
 if len(devices) == 0:
-    print("⚠️  No se detectaron dispositivos I2C.")
-    print("➡️  Verifica las conexiones SDA/SCL, VCC y GND.")
+    print("  No se detectaron dispositivos I2C.")
+    print("  Verifica las conexiones SDA/SCL, VCC y GND.")
 else:
-    print("✅ Dispositivos detectados en el bus I2C:")
+    print(" Dispositivos detectados en el bus I2C:")
     for d in devices:
         print(" - Dirección:", hex(d))
