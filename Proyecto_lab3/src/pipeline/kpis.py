@@ -1,13 +1,13 @@
 import statistics
 
 def calcular_kpis(datos):
-    """Calcula indicadores básicos para un sensor."""
+    """Calcula KPIs básicos de un conjunto de mediciones."""
     vals = datos["valor"]
-    sensor_id = datos["sensor_id"]
-    if len(vals) == 0:
-        return {"sensor_id": sensor_id, "n": 0}
+    sid = datos["sensor_id"]
+    if not vals:
+        return {"sensor_id": sid, "n": 0}
     return {
-        "sensor_id": sensor_id,
+        "sensor_id": sid,
         "n": len(vals),
         "min": min(vals),
         "max": max(vals),
@@ -16,12 +16,10 @@ def calcular_kpis(datos):
         "desv_std": round(statistics.stdev(vals), 2) if len(vals) > 1 else 0
     }
 
-def guardar_reporte_kpi(kpi_list, filepath):
-    """Guarda los KPIs en un archivo de texto plano."""
+def guardar_reporte_kpi(kpi, filepath):
+    """Guarda un diccionario de KPIs en un archivo de texto."""
     with open(filepath, "w") as f:
-        f.write("Reporte de KPIs por sensor\n")
-        f.write("="*35 + "\n\n")
-        for k in kpi_list:
-            for clave, valor in k.items():
-                f.write(f"{clave}: {valor}\n")
-            f.write("\n")
+        f.write("Reporte de KPIs del sensor DHT22\n")
+        f.write("="*40 + "\n\n")
+        for k, v in kpi.items():
+            f.write(f"{k}: {v}\n")

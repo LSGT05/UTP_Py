@@ -1,8 +1,7 @@
 import csv
-import os
 
 def leer_csv(filepath):
-    """Lee un CSV en formato ts_ms,sensor_id,valor,valor_avg,estado"""
+    """Lee un CSV con formato ts_ms,sensor_id,valor,valor_avg,estado"""
     ts, vals, vals_avg, estados = [], [], [], []
     sensor_id = None
     with open(filepath, "r") as f:
@@ -16,12 +15,10 @@ def leer_csv(filepath):
             vals.append(float(fila[2]))
             vals_avg.append(float(fila[3]))
             estados.append(fila[4])
-    return {"sensor_id": sensor_id, "ts": ts, "valor": vals, "valor_avg": vals_avg, "estado": estados}
-
-def obtener_archivos_csv(carpeta):
-    """Devuelve la lista de rutas CSV en una carpeta."""
-    archivos = []
-    for f in os.listdir(carpeta):
-        if f.endswith(".csv"):
-            archivos.append(os.path.join(carpeta, f))
-    return archivos
+    return {
+        "sensor_id": sensor_id,
+        "ts": ts,
+        "valor": vals,
+        "valor_avg": vals_avg,
+        "estado": estados
+    }

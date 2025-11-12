@@ -1,35 +1,31 @@
 import os
-from src.pipeline.IO_Utils import leer_csv, obtener_archivos_csv
+from src.pipeline.IO_Utils import leer_csv
 from src.pipeline.kpis import calcular_kpis, guardar_reporte_kpi
-from src.pipeline.plotting import plot_line, plot_hist, plot_boxplot
+from src.pipeline.plotting import plot_line, plot_hist, plot_box
 
 # --- Configuración de rutas ---
-DATA_DIR = "data/raw"
-PLOTS_DIR = "plots"
-REPORTS_DIR = "reports"
+DATA_PATH = "Proyecto_lab3/data/raw/datos_dht22.csv"
+PLOTS_DIR = "Proyecto_lab3/plots"
+REPORTS_DIR = "Proyecto_lab3/reports"
 
 os.makedirs(PLOTS_DIR, exist_ok=True)
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
 # --- Leer datos ---
-archivos = obtener_archivos_csv(DATA_DIR)
-datos_sensores = []
-kpi_list = []
+datos = leer_csv(DATA_PATH)
 
-for archivo in archivos:
-    datos = leer_csv(archivo)
-    datos_sensores.append(datos)
-    kpi = calcular_kpis(datos)
-    kpi_list.append(kpi)
-    plot_line(datos, PLOTS_DIR)
-    plot_hist(datos, PLOTS_DIR)
+# --- Calcular KPIs ---
+kpi = calcular_kpis(datos)
 
-# --- Graficar boxplot comparativo ---
-if len(datos_sensores) > 1:
-    plot_boxplot(datos_sensores, PLOTS_DIR)
+# --- Generar gráficos ---
+plot_line(datos, PLOTS_DIR)
+plot_hist(datos, PLOTS_DIR)
+plot_box(datos, PLOTS_DIR)
 
-# --- Guardar KPIs ---
-guardar_reporte_kpi(kpi_list, os.path.join(REPORTS_DIR, "reporte_kpis.txt"))
+# --- Guardar reporte ---
+reporte_path = os.path.join(REPORTS_DIR, "reporte_kpis.txt")
+guardar_reporte_kpi(kpi, reporte_path)
 
 print("✅ Pipeline completado con éxito.")
-print(f"📊 Gráficos en '{PLOTS_DIR}' y reporte en '{REPORTS_DIR}'.")
+print(f"📊 Gráficos guardados en: {PLOTS_DIR}/")
+print(f"📄 Reporte generado en: {reporte_path}")
