@@ -1,12 +1,26 @@
 import os
+from pathlib import Path
 
-def leer_archivo(ruta):
-    with open(ruta, "r") as f:
-        return f.read().strip().split("\n")
+RAW_DIR = Path("data/raw")
+CLEAN_DIR = Path("data/clean")
+REPORTS_DIR = Path("reports")
+PLOTS_DIR = Path("plots")
 
-def guardar_archivo(ruta, contenido):
-    with open(ruta, "w") as f:
-        f.write(contenido)
 
-def listar_archivos(directorio):
-    return [f for f in os.listdir(directorio) if f.endswith(".csv")]
+def ensure_dirs():
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    CLEAN_DIR.mkdir(parents=True, exist_ok=True)
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    PLOTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def list_raw_csvs():
+    return list(RAW_DIR.glob("*.csv"))
+
+
+def make_clean_name(path: Path) -> Path:
+    return CLEAN_DIR / f"clean_{path.name}"
+
+
+def safe_stem(path: Path) -> str:
+    return path.stem.replace(" ", "_").replace("-", "_")
