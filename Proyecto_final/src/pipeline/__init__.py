@@ -1,3 +1,4 @@
+# Exponer funciones clave del pipeline
 from .IO_Utils import (
     Root,
     ensure_dirs,
@@ -6,10 +7,23 @@ from .IO_Utils import (
     safe_stem,
 )
 
-from .cleaning import process_file_separating_hysteresis
-from .kpis import compute_kpis
+from .cleaning import clean_file
+from .kpis import kpis_volt
 from .plotting import (
     plot_voltage_line,
     plot_voltage_hist,
-    plot_voltage_boxplot,
+    plot_boxplot_by_sensor,
 )
+
+__all__ = [
+    "Root",
+    "ensure_dirs",
+    "list_raw_csvs",
+    "make_clean_name",
+    "safe_stem",
+    "clean_file",
+    "kpis_volt",
+    "plot_voltage_line",
+    "plot_voltage_hist",
+    "plot_boxplot_by_sensor",
+]

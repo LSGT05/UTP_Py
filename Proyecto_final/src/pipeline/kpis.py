@@ -1,36 +1,33 @@
-def avg(values):
-    return sum(values) / len(values) if values else 0
+def parse_valores(cadena):
+    h, t = cadena.split("|")
+    return float(h), float(t)
 
 
-def compute_kpis(normal_rows, evento_rows, outfile):
+def kpis_volt(filepath):
     """
-    KPIs básicos sin pandas.
+    KPIs simples sobre humedad y temperatura.
     """
+    import csv
 
-    h_normal = [r[2] for r in normal_rows]
-    h_evento = [r[2] for r in evento_rows]
+    humid_values = []
+    temp_values = []
 
-    t_normal = [r[3] for r in normal_rows]
-    t_evento = [r[3] for r in evento_rows]
+    with open(filepath, "r", encoding="utf-8") as f:
+        r = csv.DictReader(f)
+        for row in r:
+            h, t = parse_valores(row["valor(s)"])
+            humid_values.append(h)
+            temp_values.append(t)
 
-    total = len(normal_rows) + len(evento_rows)
-    porc_eventos = (len(evento_rows) / total * 100) if total else 0
+    if not humid_values:
+        return {"error": "archivo vacío"}
 
-    with open(outfile, "w", encoding="utf-8") as f:
-        f.write("===== KPI DEL SENSOR =====\n\n")
+    return {
+        "humedad_min": min(humid_values),
+        "humedad_max": max(humid_values),
+        "humedad_prom": sum(humid_values) / len(humid_values),
 
-        f.write("---- Humedad ----\n")
-        f.write(f"Normal promedio: {avg(h_normal):.2f}\n")
-        f.write(f"Evento promedio: {avg(h_evento):.2f}\n")
-        f.write(f"Máximo: {max(h_normal + h_evento):.2f}\n")
-        f.write(f"Mínimo: {min(h_normal + h_evento):.2f}\n\n")
-
-        f.write("---- Temperatura ----\n")
-        f.write(f"Normal promedio: {avg(t_normal):.2f}\n")
-        f.write(f"Evento promedio: {avg(t_evento):.2f}\n")
-        f.write(f"Máximo: {max(t_normal + t_evento):.2f}\n")
-        f.write(f"Mínimo: {min(t_normal + t_evento):.2f}\n\n")
-
-        f.write("---- Eventos ----\n")
-        f.write(f"Total de eventos: {len(evento_rows)}\n")
-        f.write(f"Porcentaje de eventos: {porc_eventos:.2f}%\n")
+        "temp_min": min(temp_values),
+        "temp_max": max(temp_values),
+        "temp_prom": sum(temp_values) / len(temp_values),
+    }

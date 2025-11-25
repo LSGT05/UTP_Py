@@ -1,90 +1,79 @@
 import os
 import matplotlib.pyplot as plt
+from .IO_Utils import Root
 
 
-def extract_series(rows):
-    """Extrae series separadas (ts, humedad, temperatura)."""
-    ts = [r[0] for r in rows]
-    h = [r[2] for r in rows]
-    t = [r[3] for r in rows]
-    return ts, h, t
+def parse_valores(cadena):
+    h, t = cadena.split("|")
+    return float(h), float(t)
 
 
-# ======================================
-#     GRAFICA DE LÍNEA
-# ======================================
+def load_series(filepath):
+    """
+    Carga listas de humedad y temperatura.
+    """
+    import csv
+    hum = []
+    temp = []
+    ts = []
 
-def plot_voltage_line(normal, evento, out_dir, stem):
-    ts_n, h_n, _ = extract_series(normal)
-    ts_e, h_e, _ = extract_series(evento)
+    with open(filepath, "r", encoding="utf-8") as f:
+        r = csv.DictReader(f)
+        for row in r:
+            h, t = parse_valores(row["valor(s)"])
+            hum.append(h)
+            temp.append(t)
+            ts.append(int(row["ts_ms"]))
 
-    plt.figure(figsize=(10, 4))
-    if ts_n:
-        plt.plot(ts_n, h_n, label="Normal")
-    if ts_e:
-        plt.plot(ts_e, h_e, label="Evento")
+    return ts, hum, temp
 
+
+# ---------------- LINE PLOT ----------------
+
+def plot_voltage_line(filepath, label):
+    ts, hum, temp = load_series(filepath)
+    
+    plt.figure()
+    plt.plot(ts, hum, label="Humedad")
+    plt.plot(ts, temp, label="Temperatura")
     plt.xlabel("Tiempo (ms)")
-    plt.ylabel("Humedad")
-    plt.title("Humedad vs Tiempo")
+    plt.ylabel("Valores")
+    plt.title(f"Serie de tiempo ({label})")
     plt.legend()
-    plt.tight_layout()
+    plt.grid(True)
 
-    plt.savefig(os.path.join(out_dir, f"{stem}_line.png"))
+    out = os.path.join(Root.PLOTS, f"{label}_line.png")
+    plt.savefig(out, dpi=150)
     plt.close()
 
 
-# ======================================
-#     HISTOGRAMA
-# ======================================
+# ---------------- HISTOGRAM ----------------
 
-def plot_voltage_hist(normal, evento, out_dir, stem):
-    _, h_n, _ = extract_series(normal)
-    _, h_e, _ = extract_series(evento)
+def plot_voltage_hist(filepath, label):
+    _, hum, temp = load_series(filepath)
 
-    plt.figure(figsize=(8, 4))
-
-    if h_n:
-        plt.hist(h_n, bins=20, alpha=0.6, label="Normal")
-    if h_e:
-        plt.hist(h_e, bins=20, alpha=0.6, label="Evento")
-
-    plt.xlabel("Humedad")
+    plt.figure()
+    plt.hist(hum, alpha=0.6, label="Humedad")
+    plt.hist(temp, alpha=0.6, label="Temperatura")
+    plt.xlabel("Valor")
     plt.ylabel("Frecuencia")
-    plt.title("Histograma de Humedad")
+    plt.title(f"Histograma ({label})")
     plt.legend()
-    plt.tight_layout()
 
-    plt.savefig(os.path.join(out_dir, f"{stem}_hist.png"))
+    out = os.path.join(Root.PLOTS, f"{label}_hist.png")
+    plt.savefig(out, dpi=150)
     plt.close()
 
 
-# ======================================
-#     BOX PLOT
-# ======================================
+# ---------------- BOX PLOT ----------------
 
-def plot_voltage_boxplot(normal, evento, out_dir, stem):
-    _, h_n, _ = extract_series(normal)
-    _, h_e, _ = extract_series(evento)
+def plot_boxplot_by_sensor(filepath, label):
+    _, hum, temp = load_series(filepath)
 
-    data = []
-    labels = []
+    plt.figure()
+    plt.boxplot([hum, temp], labels=["Humedad", "Temperatura"])
+    plt.title(f"Boxplot ({label})")
 
-    if h_n:
-        data.append(h_n)
-        labels.append("Normal")
-
-    if h_e:
-        data.append(h_e)
-        labels.append("Evento")
-
-    if not data:
-        return
-
-    plt.figure(figsize=(6, 4))
-    plt.boxplot(data, labels=labels)
-    plt.title("Boxplot de Humedad")
-    plt.tight_layout()
-
-    plt.savefig(os.path.join(out_dir, f"{stem}_boxplot.png"))
+    out = os.path.join(Root.PLOTS, f"{label}_box.png")
+    plt.savefig(out, dpi=150)
     plt.close()

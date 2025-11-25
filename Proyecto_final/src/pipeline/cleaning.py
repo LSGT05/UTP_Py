@@ -1,75 +1,64 @@
-def parse_row(line):
+from .IO_Utils import write_csv, make_clean_name, safe_stem, Root
+
+# Valores de histeresis
+ALERT_ON = 70.0     # Humedad arriba de este valor → evento
+ALERT_OFF = 65.0    # Humedad abajo → normal
+
+
+def parse_valores(cadena):
     """
-    Convierte una línea:
-    ts_ms,sensor_id,valor(s),estado
-    en una tupla usable.
+    Recibe:  "77.5|36.3"
+    Devuelve: (humedad_float, temperatura_float)
     """
-    parts = line.strip().split(",")
-    if len(parts) != 4:
-        return None
-
-    ts = int(parts[0])
-    sensor = parts[1]
-    vals = parts[2].split("|")
-
-    try:
-        h = float(vals[0])  # humedad
-        t = float(vals[1])  # temperatura
-    except:
-        return None
-
-    estado_label = parts[3]
-
-    return (ts, sensor, h, t, estado_label)
+    h, t = cadena.split("|")
+    return float(h), float(t)
 
 
-def write_rows(path, rows):
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("ts_ms,sensor_id,humedad,temperatura,estado\n")
-        for r in rows:
-            f.write(f"{r[0]},{r[1]},{r[2]},{r[3]},{r[4]}\n")
-
-
-def process_file_separating_hysteresis(infile, out_normal, out_evento, alert_on, alert_off):
+def clean_file(filepath):
     """
-    Separa en normal / evento usando histeresis.
-    Sin pandas.
+    Carga el CSV, separa filas en:
+      - normal
+      - evento
+    según la histeresis aplicada sobre la humedad.
     """
+    from .IO_Utils import read_csv  # evitar import circular
 
-    with open(infile, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+    rows = read_csv(filepath)
 
-    header = True
-    normal_rows = []
-    evento_rows = []
+    normales = []
+    eventos = []
 
-    estado_actual = "OK"
+    in_alert = False  # estado interno de histeresis
 
-    for line in lines:
-        if header:
-            header = False
-            continue
+    for row in rows:
+        humedad, temp = parse_valores(row["valor(s)"])
 
-        row = parse_row(line)
-        if not row:
-            continue
-
-        ts, sensor, h, t, old_state = row
-
-        # --- Lógica de histeresis ---
-        if estado_actual == "OK" and h >= alert_on:
-            estado_actual = "ALERT"
-        elif estado_actual == "ALERT" and h <= alert_off:
-            estado_actual = "OK"
-
-        new_row = (ts, sensor, h, t, estado_actual)
-
-        if estado_actual == "OK":
-            normal_rows.append(new_row)
+        # ---- Lógica de histeresis ----
+        if not in_alert:
+            if humedad >= ALERT_ON:
+                in_alert = True
         else:
-            evento_rows.append(new_row)
+            if humedad <= ALERT_OFF:
+                in_alert = False
 
-    write_rows(out_normal, normal_rows)
-    write_rows(out_evento, evento_rows)
+        # Clasificación final
+        if in_alert:
+            eventos.append(row)
+        else:
+            normales.append(row)
 
-    return normal_rows, evento_rows
+    # ----------- Guardar resultados ---------------
+    stem = safe_stem(filepath)
+
+    normal_name = make_clean_name(stem, "normal")
+    evento_name = make_clean_name(stem, "evento")
+
+    normal_path = f"{Root.PROCESSED}/{normal_name}"
+    evento_path = f"{Root.PROCESSED}/{evento_name}"
+
+    fieldnames = ["ts_ms", "sensor_id", "valor(s)", "estado"]
+
+    write_csv(normal_path, fieldnames, normales)
+    write_csv(evento_path, fieldnames, eventos)
+
+    return normal_path, evento_path

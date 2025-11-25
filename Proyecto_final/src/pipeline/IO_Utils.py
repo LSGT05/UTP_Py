@@ -1,59 +1,75 @@
 import os
+import csv
 
-# =====================================================
-# Clase Root: agrupa todas las rutas del proyecto
-# =====================================================
-
+# =====================
+# Rutas principales
+# =====================
 class Root:
-    def __init__(self, raw, processed, reports, plots):
-        self.raw = raw
-        self.processed = processed
-        self.reports = reports
-        self.plots = plots
+    BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+    RAW = os.path.join(BASE, "data/raw")
+    PROCESSED = os.path.join(BASE, "data/processed")
+    PLOTS = os.path.join(BASE, "plots")
+    REPORTS = os.path.join(BASE, "reports")
 
 
-# =====================================================
-# Crear carpetas necesarias
-# =====================================================
-
-def ensure_dirs(root: Root):
-    os.makedirs(root.raw, exist_ok=True)
-    os.makedirs(root.processed, exist_ok=True)
-    os.makedirs(root.reports, exist_ok=True)
-    os.makedirs(root.plots, exist_ok=True)
+# =====================
+# Utilidades de carpetas
+# =====================
+def ensure_dirs():
+    """Crea las carpetas necesarias si no existen."""
+    for d in [Root.RAW, Root.PROCESSED, Root.PLOTS, Root.REPORTS]:
+        os.makedirs(d, exist_ok=True)
 
 
-# =====================================================
-# Listar archivos CSV en /data/raw
-# =====================================================
+# =====================
+# Listar CSVs RAW
+# =====================
+def list_raw_csvs():
+    """Devuelve lista de archivos CSV en data/raw."""
+    return [
+        os.path.join(Root.RAW, f)
+        for f in os.listdir(Root.RAW)
+        if f.endswith(".csv")
+    ]
 
-def list_raw_csvs(raw_dir):
-    files = []
-    for fname in os.listdir(raw_dir):
-        if fname.lower().endswith(".csv"):
-            files.append(os.path.join(raw_dir, fname))
-    return files
+
+# =====================
+# Generar nombres de salida
+# =====================
+def safe_stem(path):
+    """Devuelve el nombre del archivo sin extensión."""
+    return os.path.splitext(os.path.basename(path))[0]
 
 
-# =====================================================
-# Limpiar nombre
-# =====================================================
-
-def make_clean_name(text: str):
+def make_clean_name(stem, tipo):
     """
-    Reemplaza espacios por guiones bajos y convierte a minúsculas.
+    Devuelve el nombre del archivo procesado:
+    ejemplo:
+       datos_proyectofinal_normal.csv
+       datos_proyectofinal_evento.csv
     """
-    return text.replace(" ", "_").lower()
+    return f"{stem}_{tipo}.csv"
 
 
-# =====================================================
-# Obtener nombre base del archivo (sin extensión)
-# =====================================================
+# =====================
+# Lectura de CSV sin pandas
+# =====================
+def read_csv(filepath):
+    """Lee el csv como lista de diccionarios."""
+    rows = []
+    with open(filepath, "r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            rows.append(row)
+    return rows
 
-def safe_stem(filename: str):
-    """
-    Extrae el nombre sin extensión.
-    Ejemplo:
-    safe_stem("datos_proyectofinal.csv") -> "datos_proyectofinal"
-    """
-    return os.path.splitext(filename)[0]
+
+# =====================
+# Escritura de CSV sin pandas
+# =====================
+def write_csv(filepath, fieldnames, rows):
+    """Escribe una lista de diccionarios en CSV."""
+    with open(filepath, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
