@@ -1,0 +1,9 @@
+KPIs del archivo procesado: c:\Users\LUIS\UTP_Py\UTP_Py\Proyecto_final\data/processed/datos_proyectofinal_evento.csv
+Tipo de datos: evento
+
+humedad_min: 65.5
+humedad_max: 100.0
+humedad_prom: 81.91897233201581
+temp_min: -32.8
+temp_max: 80.0
+temp_prom: 32.14703557312254

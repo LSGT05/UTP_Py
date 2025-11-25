@@ -3,6 +3,7 @@ from src.pipeline import (
     list_raw_csvs,
     clean_file,
     kpis_volt,
+    save_kpis_txt,
     plot_voltage_line,
     plot_voltage_hist,
     plot_boxplot_by_sensor,
@@ -22,12 +23,19 @@ def main():
 
         normal_path, evento_path = clean_file(f)
 
-        print(" -> Normal:", normal_path)
-        print(" -> Evento:", evento_path)
+        # =======================
+        #    KPIs para Normal
+        # =======================
+        kpi_normal = kpis_volt(normal_path)
+        txt_normal = save_kpis_txt(kpi_normal, normal_path, "normal")
+        print("KPIs Normal guardados en:", txt_normal)
 
-        # KPIs
-        print("KPIs Normal:", kpis_volt(normal_path))
-        print("KPIs Evento:", kpis_volt(evento_path))
+        # =======================
+        #    KPIs para Evento
+        # =======================
+        kpi_evento = kpis_volt(evento_path)
+        txt_evento = save_kpis_txt(kpi_evento, evento_path, "evento")
+        print("KPIs Evento guardados en:", txt_evento)
 
         # Gráficas
         plot_voltage_line(normal_path, "normal")

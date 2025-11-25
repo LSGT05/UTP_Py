@@ -1,0 +1,9 @@
+KPIs del archivo procesado: c:\Users\LUIS\UTP_Py\UTP_Py\Proyecto_final\data/processed/datos_proyectofinal_normal.csv
+Tipo de datos: normal
+
+humedad_min: 0.0
+humedad_max: 69.5
+humedad_prom: 55.572874493927124
+temp_min: -32.8
+temp_max: 80.0
+temp_prom: 33.35668016194325
