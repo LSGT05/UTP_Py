@@ -1,52 +1,94 @@
-#!/usr/bin/env python3
-"""
-run_pipeline.py
-Punto de entrada del pipeline: crea dirs, detecta CSVs raw y procesa cada uno
-(separa en normal / evento aplicando histeresis) y genera un reporte simple.
-"""
-import sys
-from pathlib import Path
+import os
+from src.pipeline import (
+    Root,
+    ensure_dirs,
+    list_raw_csvs,
+    make_clean_name,
+    safe_stem,
+)
+from src.pipeline.cleaning import process_file_separating_hysteresis
+from src.pipeline.kpis import compute_kpis
+from src.pipeline.plotting import (
+    plot_voltage_line,
+    plot_voltage_hist,
+    plot_voltage_boxplot,
+)
 
-# importar desde el paquete pipeline
-from src.pipeline import ensure_dirs, list_raw_csvs, make_clean_name, safe_stem
-from src.pipeline import procesar_archivo
-from src.pipeline import generate_report
+# ==========================
+# CONFIGURACIÓN DEL PROYECTO
+# ==========================
 
-BASE = Path(__file__).resolve().parent
+ROOT = Root(
+    raw="data/raw",
+    processed="data/processed",
+    reports="reports",
+    plots="plots"
+)
+
+ALERT_ON = 70.0   # fuera de histeresis (evento)
+ALERT_OFF = 65.0  # volver a normal
+
+
+# ==========================
+# EJECUCIÓN DEL PIPELINE
+# ==========================
 
 def main():
-    print("=== PIPELINE: INICIO ===")
-    # asegurar directorios
-    ensure_dirs(base=BASE)
 
-    # buscar CSVs en data/raw
-    raws = list_raw_csvs(base=BASE)
-    if not raws:
-        print("No se encontraron archivos CSV en data/raw. Coloca tus archivos y vuelve a ejecutar.")
-        sys.exit(0)
+    print("\n=== INICIANDO PIPELINE ===\n")
 
-    for raw_path in raws:
-        print(f"\nProcesando: {raw_path.name}")
-        stem = safe_stem(raw_path)
-        # rutas de salida en data/processed
-        processed_dir = BASE / "data" / "processed"
-        normal_out = processed_dir / f"{raw_path.stem}_normal.csv"
-        evento_out = processed_dir / f"{raw_path.stem}_evento.csv"
+    # 1) Crear carpetas
+    ensure_dirs(ROOT)
 
-        # procesar archivo (separador de eventos)
-        kpis = procesar_archivo(
-            ruta_entrada=raw_path,
-            ruta_salida_normal=normal_out,
-            ruta_salida_evento=evento_out,
-            base=BASE
+    # 2) Buscar CSV en /data/raw
+    raw_csvs = list_raw_csvs(ROOT.raw)
+
+    if not raw_csvs:
+        print("No se encontraron archivos .csv en data/raw/")
+        return
+
+    for filepath in raw_csvs:
+        filename = os.path.basename(filepath)
+        stem = safe_stem(filename)
+
+        print(f"\nProcesando archivo: {filename}")
+
+        # --------------------------
+        # 3) Limpiar y dividir datos
+        # --------------------------
+        out_normal = os.path.join(ROOT.processed, f"{stem}_normal.csv")
+        out_evento = os.path.join(ROOT.processed, f"{stem}_evento.csv")
+
+        normal_rows, evento_rows = process_file_separating_hysteresis(
+            filepath,
+            out_normal,
+            out_evento,
+            ALERT_ON,
+            ALERT_OFF
         )
 
-        # generar reporte por archivo
-        report_path = BASE / "reports" / f"{raw_path.stem}_report.txt"
-        generate_report(kpis, report_path)
-        print(f"Reporte guardado en: {report_path}")
+        print(f"  -> Registros normales: {len(normal_rows)}")
+        print(f"  -> Registros evento:   {len(evento_rows)}")
 
-    print("\n=== PIPELINE: FIN ===")
+        # --------------------------
+        # 4) Generar KPIs
+        # --------------------------
+        report_file = os.path.join(ROOT.reports, f"{stem}_kpis.txt")
+        compute_kpis(normal_rows, evento_rows, report_file)
+
+        print(f"  -> KPIs guardados en: {report_file}")
+
+        # --------------------------
+        # 5) Graficar
+        # --------------------------
+        plot_voltage_line(normal_rows, evento_rows, ROOT.plots, stem)
+        plot_voltage_hist(normal_rows, evento_rows, ROOT.plots, stem)
+        plot_voltage_boxplot(normal_rows, evento_rows, ROOT.plots, stem)
+
+        print(f"  -> Gráficos guardados en: {ROOT.plots}/")
+
+    print("\n=== PIPELINE COMPLETADO ===\n")
+
 
 if __name__ == "__main__":
     main()
