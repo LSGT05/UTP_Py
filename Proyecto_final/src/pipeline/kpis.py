@@ -1,56 +1,126 @@
 import os
-from .IO_Utils import Root, safe_stem
+import matplotlib.pyplot as plt
 
+# =======================================
+#   CÁLCULO DE KPIs
+# =======================================
 
-def parse_valores(cadena):
-    """Recibe cadena 'humedad|temperatura' -> retorna dos floats."""
-    h, t = cadena.split("|")
-    return float(h), float(t)
-
-
-def kpis_volt(filepath):
+def kpis_volt(rows):
     """
-    Calcula KPIs sobre los valores del CSV (humedad y temperatura).
-    No usa pandas.
+    rows = lista de diccionarios:
+    [{'timestamp': '...', 'voltaje': float, 'evento': '0/1'}, ...]
     """
-    import csv
 
-    humid_values = []
-    temp_values = []
+    if not rows:
+        return None
 
-    with open(filepath, "r", encoding="utf-8") as f:
-        r = csv.DictReader(f)
-        for row in r:
-            h, t = parse_valores(row["valor(s)"])
-            humid_values.append(h)
-            temp_values.append(t)
+    voltajes = [r["voltaje"] for r in rows]
 
-    if not humid_values:
-        return {"error": "archivo vacío"}
+    normales = [r["voltaje"] for r in rows if r["evento"] == "0"]
+    eventos = [r["voltaje"] for r in rows if r["evento"] == "1"]
 
-    return {
-        "humedad_min": min(humid_values),
-        "humedad_max": max(humid_values),
-        "humedad_prom": sum(humid_values) / len(humid_values),
-
-        "temp_min": min(temp_values),
-        "temp_max": max(temp_values),
-        "temp_prom": sum(temp_values) / len(temp_values),
+    kpis = {
+        "min": min(voltajes),
+        "max": max(voltajes),
+        "promedio": sum(voltajes) / len(voltajes),
+        "conteo_total": len(voltajes),
+        "normales": len(normales),
+        "eventos": len(eventos),
     }
 
+    return kpis
 
-def save_kpis_txt(kpi_dict, filepath, etiqueta):
-    """
-    Guarda los KPIs en un archivo TXT dentro de /reports.
-    """
-    filename = f"kpis_{safe_stem(filepath)}_{etiqueta}.txt"
-    fullpath = os.path.join(Root.REPORTS, filename)
 
-    with open(fullpath, "w", encoding="utf-8") as f:
-        f.write(f"KPIs del archivo procesado: {filepath}\n")
-        f.write(f"Tipo de datos: {etiqueta}\n\n")
+# =======================================
+#   GUARDAR KPIs EN TXT
+# =======================================
 
-        for k, v in kpi_dict.items():
-            f.write(f"{k}: {v}\n")
+def save_kpis_txt(kpis, reports_folder="reports", filename="kpis_resultados.txt"):
 
-    return fullpath
+    os.makedirs(reports_folder, exist_ok=True)
+    filepath = os.path.join(reports_folder, filename)
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        for key, value in kpis.items():
+            f.write(f"{key}: {value}\n")
+
+    print(f"[OK] KPIs guardados en {filepath}")
+
+
+# =======================================
+#   GRAFICAS
+# =======================================
+
+def plot_normal_vs_event(rows, plots_folder="plots"):
+    os.makedirs(plots_folder, exist_ok=True)
+
+    normales = [r["voltaje"] for r in rows if r["evento"] == "0"]
+    eventos = [r["voltaje"] for r in rows if r["evento"] == "1"]
+
+    plt.figure(figsize=(8, 5))
+    plt.hist(normales, alpha=0.7, label="Normal")
+    plt.hist(eventos, alpha=0.7, label="Evento")
+    plt.title("Distribución Voltaje: Normales vs Eventos")
+    plt.xlabel("Voltaje (V)")
+    plt.ylabel("Frecuencia")
+    plt.legend()
+
+    output_path = os.path.join(plots_folder, "normal_vs_evento.png")
+    plt.savefig(output_path)
+    plt.close()
+
+    print(f"[OK] Imagen generada: {output_path}")
+
+
+def plot_time_series(rows, plots_folder="plots"):
+    os.makedirs(plots_folder, exist_ok=True)
+
+    x = [int(r["timestamp"]) for r in rows]
+    y = [r["voltaje"] for r in rows]
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(x, y, marker="o", linestyle="-")
+    plt.title("Voltaje en el Tiempo")
+    plt.xlabel("timestamp (ms)")
+    plt.ylabel("Voltaje (V)")
+
+    out = os.path.join(plots_folder, "time_series.png")
+    plt.savefig(out)
+    plt.close()
+
+    print(f"[OK] Imagen generada: {out}")
+
+
+def plot_histograma(rows, plots_folder="plots"):
+    os.makedirs(plots_folder, exist_ok=True)
+
+    voltajes = [r["voltaje"] for r in rows]
+
+    plt.figure(figsize=(8, 5))
+    plt.hist(voltajes, bins=10)
+    plt.title("Histograma del Voltaje")
+    plt.xlabel("Voltaje (V)")
+    plt.ylabel("Frecuencia")
+
+    out = os.path.join(plots_folder, "histograma.png")
+    plt.savefig(out)
+    plt.close()
+
+    print(f"[OK] Imagen generada: {out}")
+
+
+def plot_boxplot(rows, plots_folder="plots"):
+    os.makedirs(plots_folder, exist_ok=True)
+
+    voltajes = [r["voltaje"] for r in rows]
+
+    plt.figure(figsize=(6, 6))
+    plt.boxplot(voltajes, vert=True)
+    plt.title("Boxplot del Voltaje")
+    plt.ylabel("Voltaje (V)")
+
+    out = os.path.join(plots_folder, "boxplot.png")
+    plt.savefig(out)
+    plt.close()
+
+    print(f"[OK] Imagen generada: {out}")

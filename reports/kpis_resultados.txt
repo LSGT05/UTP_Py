@@ -1,0 +1,6 @@
+min: 0.0
+max: 100.0
+promedio: 68.904
+conteo_total: 500
+normales: 247
+eventos: 253
