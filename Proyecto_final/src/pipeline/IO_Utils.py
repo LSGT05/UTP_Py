@@ -1,53 +1,75 @@
 import os
+import csv
 
-# =======================================
-#    FUNCION PARA LEER CSV SIN PANDAS
-# =======================================
+# =====================
+# Rutas principales
+# =====================
+class Root:
+    BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+    RAW = os.path.join(BASE, "data/raw")
+    PROCESSED = os.path.join(BASE, "data/processed")
+    PLOTS = os.path.join(BASE, "plots")
+    REPORTS = os.path.join(BASE, "reports")
 
-def read_csv_as_dict(csv_path):
-    """
-    Convierte el CSV en una lista de diccionarios:
-    [
-        {"timestamp": int, "sensor": str, "voltaje": float, "evento": "0/1"},
-        ...
+
+# =====================
+# Utilidades de carpetas
+# =====================
+def ensure_dirs():
+    """Crea las carpetas necesarias si no existen."""
+    for d in [Root.RAW, Root.PROCESSED, Root.PLOTS, Root.REPORTS]:
+        os.makedirs(d, exist_ok=True)
+
+
+# =====================
+# Listar CSVs RAW
+# =====================
+def list_raw_csvs():
+    """Devuelve lista de archivos CSV en data/raw."""
+    return [
+        os.path.join(Root.RAW, f)
+        for f in os.listdir(Root.RAW)
+        if f.endswith(".csv")
     ]
+
+
+# =====================
+# Generar nombres de salida
+# =====================
+def safe_stem(path):
+    """Devuelve el nombre del archivo sin extensión."""
+    return os.path.splitext(os.path.basename(path))[0]
+
+
+def make_clean_name(stem, tipo):
     """
+    Devuelve el nombre del archivo procesado:
+    ejemplo:
+       datos_proyectofinal_normal.csv
+       datos_proyectofinal_evento.csv
+    """
+    return f"{stem}_{tipo}.csv"
 
+
+# =====================
+# Lectura de CSV sin pandas
+# =====================
+def read_csv(filepath):
+    """Lee el csv como lista de diccionarios."""
     rows = []
-
-    with open(csv_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-
-    # Quitar salto de línea
-    lines = [l.strip() for l in lines if l.strip()]
-
-    # Quitar encabezado
-    header = lines[0]
-    data_lines = lines[1:]
-
-    for line in data_lines:
-        parts = line.split(",")
-
-        if len(parts) != 4:
-            continue
-
-        timestamp = parts[0]
-        sensor_id = parts[1]
-        valores = parts[2]
-        estado_txt = parts[3]
-
-        # valores = "77.5|36.3"
-        volt_txt, temp_txt = valores.split("|")
-
-        volt = float(volt_txt)
-
-        evento = "1" if estado_txt == "ALERT" else "0"
-
-        rows.append({
-            "timestamp": timestamp,
-            "sensor": sensor_id,
-            "voltaje": volt,
-            "evento": evento
-        })
-
+    with open(filepath, "r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            rows.append(row)
     return rows
+
+
+# =====================
+# Escritura de CSV sin pandas
+# =====================
+def write_csv(filepath, fieldnames, rows):
+    """Escribe una lista de diccionarios en CSV."""
+    with open(filepath, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)

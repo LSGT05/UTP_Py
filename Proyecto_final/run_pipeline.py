@@ -1,26 +1,53 @@
 from src.pipeline import (
-    read_csv_as_dict,
+    ensure_dirs,
+    list_raw_csvs,
+    clean_file,
     kpis_volt,
     save_kpis_txt,
-    plot_normal_vs_event,
-    plot_time_series,
-    plot_histograma,
-    plot_boxplot
+    plot_voltage_line,
+    plot_voltage_hist,
+    plot_boxplot_by_sensor,
 )
 
-CSV_PATH = "Proyecto_final/data/raw/datos_proyectofinal.csv"
 
-# Leer datos
-rows = read_csv_as_dict(CSV_PATH)
+def main():
+    ensure_dirs()
 
-# KPIs
-kpis = kpis_volt(rows)
-save_kpis_txt(kpis)
+    raw_files = list_raw_csvs()
+    if not raw_files:
+        print("No hay CSVs en data/raw")
+        return
 
-# Gráficas
-plot_normal_vs_event(rows)
-plot_time_series(rows)
-plot_histograma(rows)
-plot_boxplot(rows)
+    for f in raw_files:
+        print(f"\nProcesando: {f}")
 
-print("\n[OK] Todas las gráficas generadas y KPIs guardados.\n")
+        normal_path, evento_path = clean_file(f)
+
+        # =======================
+        #    KPIs para Normal
+        # =======================
+        kpi_normal = kpis_volt(normal_path)
+        txt_normal = save_kpis_txt(kpi_normal, normal_path, "normal")
+        print("KPIs Normal guardados en:", txt_normal)
+
+        # =======================
+        #    KPIs para Evento
+        # =======================
+        kpi_evento = kpis_volt(evento_path)
+        txt_evento = save_kpis_txt(kpi_evento, evento_path, "evento")
+        print("KPIs Evento guardados en:", txt_evento)
+
+        # Gráficas
+        plot_voltage_line(normal_path, "normal")
+        plot_voltage_hist(normal_path, "normal")
+        plot_boxplot_by_sensor(normal_path, "normal")
+
+        plot_voltage_line(evento_path, "evento")
+        plot_voltage_hist(evento_path, "evento")
+        plot_boxplot_by_sensor(evento_path, "evento")
+
+    print("\nPipeline completado.")
+
+
+if __name__ == "__main__":
+    main()
