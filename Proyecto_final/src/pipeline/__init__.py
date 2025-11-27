@@ -1,4 +1,3 @@
-# Exponer funciones clave del pipeline
 from .IO_Utils import (
     Root,
     ensure_dirs,
@@ -13,6 +12,7 @@ from .plotting import (
     plot_voltage_line,
     plot_voltage_hist,
     plot_boxplot_by_sensor,
+    plot_compare_normal_evento,
 )
 
 __all__ = [
@@ -27,4 +27,5 @@ __all__ = [
     "plot_voltage_line",
     "plot_voltage_hist",
     "plot_boxplot_by_sensor",
+    "plot_compare_normal_evento",
 ]

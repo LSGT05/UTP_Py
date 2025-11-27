@@ -1,5 +1,7 @@
 import os
 import matplotlib.pyplot as plt
+import pandas as pd
+import csv
 from .IO_Utils import Root
 
 
@@ -9,10 +11,7 @@ def parse_valores(cadena):
 
 
 def load_series(filepath):
-    """
-    Carga listas de humedad y temperatura.
-    """
-    import csv
+    """Carga listas de humedad y temperatura."""
     hum = []
     temp = []
     ts = []
@@ -32,7 +31,7 @@ def load_series(filepath):
 
 def plot_voltage_line(filepath, label):
     ts, hum, temp = load_series(filepath)
-    
+
     plt.figure()
     plt.plot(ts, hum, label="Humedad")
     plt.plot(ts, temp, label="Temperatura")
@@ -77,3 +76,30 @@ def plot_boxplot_by_sensor(filepath, label):
     out = os.path.join(Root.PLOTS, f"{label}_box.png")
     plt.savefig(out, dpi=150)
     plt.close()
+
+
+# ---------------- COMPARACIÓN NORMAL VS EVENTO ----------------
+
+def plot_compare_normal_evento(normal_path, evento_path):
+    """Gráfico comparando Humedad y Temperatura entre Normal y Evento."""
+    
+    ts_n, hum_n, temp_n = load_series(normal_path)
+    ts_e, hum_e, temp_e = load_series(evento_path)
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(ts_n, hum_n, label="Humedad - Normal", linewidth=1.2)
+    plt.plot(ts_e, hum_e, label="Humedad - Evento", linewidth=1.2)
+    plt.plot(ts_n, temp_n, label="Temperatura - Normal", linewidth=1.2)
+    plt.plot(ts_e, temp_e, label="Temperatura - Evento", linewidth=1.2)
+
+    plt.xlabel("Tiempo (ms)")
+    plt.ylabel("Valores")
+    plt.title("Comparación: Normal vs Evento")
+    plt.legend()
+    plt.grid(True)
+
+    out = os.path.join(Root.PLOTS, "comparacion_normal_evento.png")
+    plt.savefig(out, dpi=150)
+    plt.close()
+
+    return out
