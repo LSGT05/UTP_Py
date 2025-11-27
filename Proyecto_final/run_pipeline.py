@@ -25,21 +25,21 @@ def main():
         normal_path, evento_path = clean_file(f)
 
         # =======================
-        #       KPIs Normal
+        #    KPIs Normal
         # =======================
         kpi_normal = kpis_volt(normal_path)
         txt_normal = save_kpis_txt(kpi_normal, normal_path, "normal")
         print("KPIs Normal guardados en:", txt_normal)
 
         # =======================
-        #       KPIs Evento
+        #    KPIs Evento
         # =======================
         kpi_evento = kpis_volt(evento_path)
         txt_evento = save_kpis_txt(kpi_evento, evento_path, "evento")
         print("KPIs Evento guardados en:", txt_evento)
 
         # =======================
-        #       GRÁFICOS
+        #    GRÁFICOS
         # =======================
         plot_voltage_line(normal_path, "normal")
         plot_voltage_hist(normal_path, "normal")
@@ -50,10 +50,10 @@ def main():
         plot_boxplot_by_sensor(evento_path, "evento")
 
         # =======================
-        #  GRÁFICO COMPARATIVO
+        #    GRÁFICO COMPARATIVO
         # =======================
-        compare_path = plot_compare_normal_evento(normal_path, evento_path)
-        print("Gráfico comparativo guardado en:", compare_path)
+        compare_img = plot_compare_normal_evento(normal_path, evento_path)
+        print("Gráfico comparativo guardado en:", compare_img)
 
     print("\nPipeline completado.")
 
